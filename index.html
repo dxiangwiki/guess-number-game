@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>碰运气小游戏</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  }
+
+  body {
+    background: #f5f7fa;
+    color: #1f2937;
+    padding: 16px;
+    max-width: 560px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 22px;
+    color: #111827;
+    margin-bottom: 16px;
+  }
+
+  .balance-box {
+    background: linear-gradient(135deg, #eef2ff, #f0f9ff);
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .balance-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 6px;
+  }
+
+  .balance-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #4f46e5;
+    letter-spacing: 1px;
+  }
+
+  .section {
+    background: #ffffff;
+    border: 1px solid #eef0f3;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+
+  label {
+    display: block;
+    font-size: 14px;
+    color: #374151;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  input[type="number"],
+  select {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background: #fafafa;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input[type="number"]:focus,
+  select:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    background: #ffffff;
+  }
+
+  .btn-group,
+  .btn-group-2,
+  .btn-group-3 {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    flex: 1;
+    min-width: 120px;
+    padding: 13px 8px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+  }
+
+  .btn-primary {
+    background: #4f46e5;
+    color: #ffffff;
+  }
+
+  .btn-primary:hover {
+    background: #4338ca;
+  }
+
+  .btn-primary:disabled {
+    background: #c7d2fe;
+    color: #ffffff;
+    cursor: not-allowed;
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
+  }
+  .btn-danger{
+    background:#fee2e2;
+    color:#b91c1c;
+  }
+  .btn-danger:hover{
+    background:#fecdd3;
+  }
+  .btn-warning{
+    background:#fffbeb;
+    color:#92400e;
+  }
+  .btn-warning:hover{
+    background:#fef3c7;
+  }
+
+  .tip {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 16px;
+    min-height: 52px;
+    font-weight: 600;
+  }
+
+  .tip-info {
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #e0e7ff;
+  }
+
+  .tip-win {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+  }
+
+  .tip-lose {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+  }
+
+  .rules {
+    margin-top: 16px;
+    background: #ffffff;
+    border: 1px solid #eef0f3;
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .rules h3 {
+    font-size: 15px;
+    margin-bottom: 10px;
+    color: #111827;
+  }
+
+  .rules ul {
+    padding-left: 20px;
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.7;
+  }
+
+  .rules strong {
+    color: #4f46e5;
+  }
+
+  /* 统计面板 */
+  .stat-panel {
+    margin-top: 14px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 14px;
+    padding: 14px;
+  }
+  .stat-panel h3 {
+    font-size:15px;
+    margin-bottom:10px;
+    color:#92400e;
+  }
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap:8px;
+  }
+  .stat-item {
+    background:#ffffff;
+    padding:10px 6px;
+    border-radius:10px;
+    text-align:center;
+    border:1px solid #fef3c7;
+  }
+  .stat-label {
+    font-size:12px;
+    color:#78716c;
+    margin-bottom:4px;
+  }
+  .stat-value {
+    font-size:16px;
+    font-weight:bold;
+    color:#1c1917;
+  }
+
+  /* 历史记录面板 */
+  .history-panel {
+    margin-top:14px;
+    background:#f8fafc;
+    border:1px solid #cbd5e1;
+    border-radius:14px;
+    padding:14px;
+  }
+  .history-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .history-head h3{
+    font-size:15px;
+    color:#1e293b;
+  }
+  .toggle-btn{
+    font-size:13px;
+    padding:4px 8px;
+    min-width:60px;
+  }
+  .history-list{
+    max-height:240px;
+    overflow-y:auto;
+  }
+  .history-item{
+    background:#fff;
+    padding:8px 10px;
+    border-radius:8px;
+    margin-bottom:6px;
+    font-size:12px;
+    border:1px solid #e2e8f0;
+  }
+  .history-win{
+    border-left:4px solid #10b981;
+  }
+  .history-lose{
+    border-left:4px solid #ef4444;
+  }
+  .empty-history{
+    text-align:center;
+    color:#94a3b8;
+    padding:10px;
+  }
+
+  /* 小屏幕适配 */
+  @media (max-width: 380px) {
+    body {
+      padding: 12px;
+    }
+    .card {
+      padding: 16px;
+    }
+    h1 {
+      font-size: 20px;
+    }
+    .balance-value {
+      font-size: 24px;
+    }
+    .stat-grid {
+      grid-template-columns: 1fr;
+    }
+    button {
+      min-width: 100px;
+      font-size:14px;
+      padding:12px 6px;
+    }
+  }
+</style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>碰运气小游戏</h1>
+
+    <div class="balance-box">
+      <div class="balance-label">当前余额</div>
+      <div class="balance-value" id="balance">1000.00</div>
+    </div>
+
+    <div class="section">
+      <label for="betInput">投币金额（整数，1 ≤ 金额 ≤ 余额）</label>
+      <input type="number" id="betInput" placeholder="请输入投币金额" min="1" />
+    </div>
+
+    <div class="section">
+      <label for="guessMode">猜测模式</label>
+      <select id="guessMode">
+        <option value="exact">精确猜数字（1~50）</option>
+        <option value="range">猜区间（1~25 / 26~50）</option>
+      </select>
+    </div>
+
+    <div class="section" id="exactRow">
+      <label for="exactNum">猜测精确数字（1 - 50）</label>
+      <input type="number" id="exactNum" min="1" max="50" placeholder="1~50" />
+    </div>
+
+    <div class="section" id="rangeRow" style="display: none;">
+      <label for="rangeSel">选择区间</label>
+      <select id="rangeSel">
+        <option value="1-25">1 ~ 25</option>
+        <option value="26-50">26 ~ 50</option>
+      </select>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn-primary" id="startBtn">开始游戏</button>
+    </div>
+    <div class="btn-group-2">
+      <button class="btn-secondary" id="resetBalanceBtn">只重置余额</button>
+      <button class="btn-danger" id="resetStatBtn">只清空战绩统计</button>
+    </div>
+    <div class="btn-group-3">
+      <button class="btn-warning" id="clearHistoryBtn">清空对局历史</button>
+    </div>
+
+    <div class="tip" id="tipBox"></div>
+
+    <!-- 统计面板 -->
+    <div class="stat-panel">
+      <h3>📊 战绩记录</h3>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-label">最高单次盈利</div>
+          <div class="stat-value" id="maxWin">0.00</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">最高单次亏损</div>
+          <div class="stat-value" id="maxLose">0.00</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">累计总盈利</div>
+          <div class="stat-value" id="totalWin">0.00</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">累计总亏损</div>
+          <div class="stat-value" id="totalLose">0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 对局历史面板 -->
+    <div class="history-panel">
+      <div class="history-head">
+        <h3>📜 对局历史</h3>
+        <button class="btn-secondary toggle-btn" id="toggleHistory">收起</button>
+      </div>
+      <div class="history-list" id="historyList"></div>
+    </div>
+
+    <div class="rules">
+      <h3>玩法说明</h3>
+      <ul>
+        <li>投币金额必须是整数，余额可以有小数。</li>
+        <li>精确猜数字：<strong>猜对返还 40 倍</strong>投币。</li>
+        <li>猜区间：<strong>猜对返还 1.8 倍</strong>投币。</li>
+        <li>猜错不返还本金。</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const balanceEl = document.getElementById("balance");
+    const betInput = document.getElementById("betInput");
+    const guessMode = document.getElementById("guessMode");
+    const exactRow = document.getElementById("exactRow");
+    const rangeRow = document.getElementById("rangeRow");
+    const exactNum = document.getElementById("exactNum");
+    const rangeSel = document.getElementById("rangeSel");
+    const startBtn = document.getElementById("startBtn");
+    const resetBalanceBtn = document.getElementById("resetBalanceBtn");
+    const resetStatBtn = document.getElementById("resetStatBtn");
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+    const toggleHistoryBtn = document.getElementById("toggleHistory");
+    const tipBox = document.getElementById("tipBox");
+    const historyList = document.getElementById("historyList");
+
+    const maxWinEl = document.getElementById("maxWin");
+    const maxLoseEl = document.getElementById("maxLose");
+    const totalWinEl = document.getElementById("totalWin");
+    const totalLoseEl = document.getElementById("totalLose");
+
+    let balance = parseFloat(localStorage.getItem("luckGameBalance")) || 1000;
+    let stats = JSON.parse(localStorage.getItem("luckGameStats")) || {
+      maxWin: 0,
+      maxLose: 0,
+      totalWin: 0,
+      totalLose: 0
+    };
+    let historyListData = JSON.parse(localStorage.getItem("luckGameHistory")) || [];
+    let historyShow = true;
+
+    guessMode.addEventListener("change", () => {
+      if (guessMode.value === "exact") {
+        exactRow.style.display = "block";
+        rangeRow.style.display = "none";
+      } else {
+        exactRow.style.display = "none";
+        rangeRow.style.display = "block";
+      }
+    });
+
+    function renderBalance() {
+      balanceEl.textContent = balance.toFixed(2);
+      localStorage.setItem("luckGameBalance", balance);
+    }
+
+    function renderStats() {
+      maxWinEl.textContent = stats.maxWin.toFixed(2);
+      maxLoseEl.textContent = stats.maxLose.toFixed(2);
+      totalWinEl.textContent = stats.totalWin.toFixed(2);
+      totalLoseEl.textContent = stats.totalLose.toFixed(2);
+      localStorage.setItem("luckGameStats", JSON.stringify(stats));
+    }
+
+    function renderHistory() {
+      localStorage.setItem("luckGameHistory", JSON.stringify(historyListData));
+      if(!historyShow){
+        historyList.style.display = "none";
+        return;
+      }
+      historyList.style.display = "block";
+      if(historyListData.length === 0){
+        historyList.innerHTML = `<div class="empty-history">暂无对局记录</div>`;
+        return;
+      }
+      let html = "";
+      historyListData.slice().reverse().forEach(item=>{
+        html += `
+        <div class="history-item ${item.isWin ? 'history-win' : 'history-lose'}">
+          <div>${item.time} | ${item.modeName}</div>
+          <div>投币：${item.bet}｜开出：${item.randNum}｜${item.isWin ? "赢 +"+item.profit.toFixed(2) : "亏 -"+item.bet.toFixed(2)}</div>
+        </div>`
+      })
+      historyList.innerHTML = html;
+    }
+
+    function setTip(text, type = "info") {
+      tipBox.className = "tip tip-" + type;
+      tipBox.innerText = text;
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    // 切换历史收起展开
+    toggleHistoryBtn.onclick = ()=>{
+      historyShow = !historyShow;
+      toggleHistoryBtn.innerText = historyShow ? "收起" : "展开";
+      renderHistory();
+    }
+
+    // 清空历史
+    clearHistoryBtn.onclick = ()=>{
+      historyListData = [];
+      renderHistory();
+      setTip("对局历史已清空，余额和战绩不变", "info");
+    }
+
+    startBtn.addEventListener("click", async () => {
+      const betStr = betInput.value.trim();
+      const bet = parseInt(betStr, 10);
+
+      if (isNaN(bet) || bet < 1 || !Number.isInteger(Number(betStr))) {
+        setTip("投币金额必须是 ≥1 的整数！", "lose");
+        return;
+      }
+
+      if (bet > balance) {
+        setTip("投币金额不能超过当前余额！", "lose");
+        return;
+      }
+
+      let guessTarget = null;
+      let modeName = "";
+      if (guessMode.value === "exact") {
+        const g = parseInt(exactNum.value, 10);
+        if (isNaN(g) || g < 1 || g > 50) {
+          setTip("精确数字必须在 1~50 之间", "lose");
+          return;
+        }
+        guessTarget = { type: "exact", val: g };
+        modeName = "精确猜数字";
+      } else {
+        guessTarget = { type: "range", val: rangeSel.value };
+        modeName = "猜区间";
+      }
+
+      balance -= bet;
+      renderBalance();
+
+      startBtn.disabled = true;
+      betInput.disabled = true;
+      guessMode.disabled = true;
+      exactNum.disabled = true;
+      rangeSel.disabled = true;
+
+      let cd = 3;
+      setTip(`倒计时开奖：${cd} 秒`, "info");
+      while (cd > 0) {
+        await sleep(1000);
+        cd--;
+        setTip(`倒计时开奖：${cd} 秒`, "info");
+      }
+
+      const rand = Math.floor(Math.random() * 50) + 1;
+      let win = false;
+      let profit = 0;
+
+      if (guessTarget.type === "exact") {
+        win = rand === guessTarget.val;
+      } else {
+        if (guessTarget.val === "1-25") {
+          win = rand >= 1 && rand <= 25;
+        } else {
+          win = rand >= 26 && rand <= 50;
+        }
+      }
+
+      if (win) {
+        if (guessTarget.type === "exact") {
+          profit = bet * 40;
+          setTip(`🎉 精确命中！随机数：${rand}，获得 ${profit.toFixed(2)}`, "win");
+        } else {
+          profit = bet * 1.8;
+          setTip(`🎉 区间命中！随机数：${rand}，获得 ${profit.toFixed(2)}`, "win");
+        }
+        balance += profit;
+        stats.totalWin += profit;
+        if (profit > stats.maxWin) stats.maxWin = profit;
+      } else {
+        profit = 0;
+        setTip(`😵 猜错！随机数：${rand}，本金扣除`, "lose");
+        stats.totalLose += bet;
+        if (bet > stats.maxLose) stats.maxLose = bet;
+      }
+
+      // 写入历史记录
+      const now = new Date();
+      const timeStr = now.toLocaleString();
+      historyListData.push({
+        time: timeStr,
+        modeName,
+        bet,
+        randNum: rand,
+        isWin: win,
+        profit
+      });
+      // 最多保留50条记录，防止太多
+      if(historyListData.length > 50) historyListData.shift();
+
+      renderBalance();
+      renderStats();
+      renderHistory();
+
+      startBtn.disabled = false;
+      betInput.disabled = false;
+      guessMode.disabled = false;
+      exactNum.disabled = false;
+      rangeSel.disabled = false;
+    });
+
+    resetBalanceBtn.onclick = ()=>{
+      balance = 1000;
+      renderBalance();
+      setTip("余额已重置为1000.00，战绩、历史保持不变", "info");
+    }
+    resetStatBtn.onclick = ()=>{
+      stats = {
+        maxWin: 0,
+        maxLose: 0,
+        totalWin: 0,
+        totalLose: 0
+      };
+      renderStats();
+      setTip("战绩统计已清空，余额、历史不变", "info");
+    }
+
+    renderBalance();
+    renderStats();
+    renderHistory();
+  </script>
+</body>
+</html>
