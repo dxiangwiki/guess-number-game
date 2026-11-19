@@ -399,7 +399,7 @@
       <h3>玩法说明</h3>
       <ul>
         <li>投币金额必须是整数，余额可以有小数。</li>
-        <li>精确猜数字：<strong>猜对返还 40 倍</strong>投币。</li>
+        <li>精确猜数字：<strong>猜对返还 60 倍</strong>投币。</li>
         <li>猜区间：<strong>猜对返还 1.8 倍</strong>投币。</li>
         <li>猜错不返还本金。</li>
       </ul>
@@ -567,10 +567,10 @@
 
       if (win) {
         if (guessTarget.type === "exact") {
-          profit = bet * 40;
+          profit = bet * 60;
           setTip(`🎉 精确命中！随机数：${rand}，获得 ${profit.toFixed(2)}`, "win");
         } else {
-          profit = bet * 1.8;
+          profit = bet * 1.97;
           setTip(`🎉 区间命中！随机数：${rand}，获得 ${profit.toFixed(2)}`, "win");
         }
         balance += profit;
