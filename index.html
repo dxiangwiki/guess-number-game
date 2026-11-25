@@ -98,6 +98,20 @@
     margin-bottom: 12px;
   }
 
+  /* 冻结账户独立分组 */
+  .freeze-panel {
+    margin-top: 16px;
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    border-radius: 16px;
+    padding: 14px;
+  }
+  .freeze-panel-title {
+    font-size: 15px;
+    color: #0369a1;
+    margin-bottom: 10px;
+  }
+
   label {
     display: block;
     font-size: 14px;
@@ -408,23 +422,6 @@
       </select>
     </div>
 
-    <!-- 冻结 / 封存操作区 -->
-    <div class="section">
-      <label for="freezeInput">封存金额（从余额转入冻结账户）</label>
-      <input type="number" id="freezeInput" placeholder="输入要封存的金额" min="0.01" step="0.01" />
-      <div class="btn-group-2">
-        <button class="btn-save" id="freezeBtn">封存到冻结账户</button>
-      </div>
-    </div>
-
-    <div class="section">
-      <label for="unfreezeInput">取回金额（从冻结账户转回余额）</label>
-      <input type="number" id="unfreezeInput" placeholder="需累计赢 10 次后才可取回" min="0.01" step="0.01" />
-      <div class="btn-group-2">
-        <button class="btn-unfreeze" id="unfreezeBtn">从冻结账户取回</button>
-      </div>
-    </div>
-
     <div class="btn-group">
       <button class="btn-primary" id="startBtn">开始游戏</button>
     </div>
@@ -437,6 +434,25 @@
     </div>
 
     <div class="tip" id="tipBox"></div>
+
+    <!-- 冻结账户（独立分组，与游戏对局分离） -->
+    <div class="freeze-panel">
+      <h3 class="freeze-panel-title">🔒 冻结账户</h3>
+      <div class="section">
+        <label for="freezeInput">封存金额（从余额转入冻结账户）</label>
+        <input type="number" id="freezeInput" placeholder="输入要封存的金额" min="0.01" step="0.01" />
+        <div class="btn-group-2">
+          <button class="btn-save" id="freezeBtn">封存到冻结账户</button>
+        </div>
+      </div>
+      <div class="section">
+        <label for="unfreezeInput">取回金额（从冻结账户转回余额）</label>
+        <input type="number" id="unfreezeInput" placeholder="需累计赢 10 次后才可取回" min="0.01" step="0.01" />
+        <div class="btn-group-2">
+          <button class="btn-unfreeze" id="unfreezeBtn">从冻结账户取回</button>
+        </div>
+      </div>
+    </div>
 
     <!-- 统计面板 -->
     <div class="stat-panel">
@@ -537,6 +553,17 @@
       }
     });
 
+    // 回车快捷提交：在输入框内按回车直接触发对应按钮
+    function bindEnter(inputEl, btnEl) {
+      inputEl.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") btnEl.click();
+      });
+    }
+    bindEnter(betInput, startBtn);
+    bindEnter(exactNum, startBtn);
+    bindEnter(freezeInput, freezeBtn);
+    bindEnter(unfreezeInput, unfreezeBtn);
+
     function renderBalance() {
       balanceEl.textContent = balance.toFixed(2);
       localStorage.setItem("luckGameBalance", balance);
@@ -616,6 +643,8 @@
       setTip("对局历史已清空，余额和战绩不变", "info");
     }
 
+    /* ==================== 冻结账户模块：封存 / 取回 ==================== */
+
     // 封存：从余额转入冻结账户
     freezeBtn.onclick = ()=>{
       const amt = parseFloat(freezeInput.value);
@@ -663,6 +692,8 @@
       renderStats();
       setTip(`已从冻结账户取回 ${amt.toFixed(2)}，余额 ${balance.toFixed(2)}`, "win");
     }
+
+    /* ==================== 游戏对局模块：下注与开奖 ==================== */
 
     startBtn.addEventListener("click", async () => {
       const betStr = betInput.value.trim();
@@ -795,4 +826,3 @@
   </script>
 </body>
 </html>
-<!-- （注：内容由AI生成） -->
