@@ -57,6 +57,39 @@
     letter-spacing: 1px;
   }
 
+  .frozen-box {
+    background: linear-gradient(135deg, #f1f5f9, #f8fafc);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .frozen-label {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+
+  .frozen-value {
+    font-size: 26px;
+    font-weight: 800;
+    color: #0ea5e9;
+    letter-spacing: 1px;
+  }
+
+  .frozen-progress {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  .frozen-progress.unlocked {
+    color: #047857;
+  }
+
   .section {
     background: #ffffff;
     border: 1px solid #eef0f3;
@@ -151,6 +184,25 @@
   }
   .btn-warning:hover{
     background:#fef3c7;
+  }
+  .btn-save{
+    background:#e0e7ff;
+    color:#4338ca;
+  }
+  .btn-save:hover{
+    background:#c7d2fe;
+  }
+  .btn-unfreeze{
+    background:#0ea5e9;
+    color:#ffffff;
+  }
+  .btn-unfreeze:hover{
+    background:#0284c7;
+  }
+  .btn-unfreeze:disabled{
+    background:#bae6fd;
+    color:#ffffff;
+    cursor:not-allowed;
   }
 
   .tip {
@@ -324,6 +376,12 @@
       <div class="balance-value" id="balance">1000.00</div>
     </div>
 
+    <div class="frozen-box">
+      <div class="frozen-label">冻结账户（已封存金额）</div>
+      <div class="frozen-value" id="frozen">0.00</div>
+      <div class="frozen-progress" id="frozenProgress"></div>
+    </div>
+
     <div class="section">
       <label for="betInput">投币金额（整数，1 ≤ 金额 ≤ 余额）</label>
       <input type="number" id="betInput" placeholder="请输入投币金额" min="1" />
@@ -348,6 +406,23 @@
         <option value="1-25">1 ~ 25</option>
         <option value="26-50">26 ~ 50</option>
       </select>
+    </div>
+
+    <!-- 冻结 / 封存操作区 -->
+    <div class="section">
+      <label for="freezeInput">封存金额（从余额转入冻结账户）</label>
+      <input type="number" id="freezeInput" placeholder="输入要封存的金额" min="0.01" step="0.01" />
+      <div class="btn-group-2">
+        <button class="btn-save" id="freezeBtn">封存到冻结账户</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <label for="unfreezeInput">取回金额（从冻结账户转回余额）</label>
+      <input type="number" id="unfreezeInput" placeholder="需累计赢 10 次后才可取回" min="0.01" step="0.01" />
+      <div class="btn-group-2">
+        <button class="btn-unfreeze" id="unfreezeBtn">从冻结账户取回</button>
+      </div>
     </div>
 
     <div class="btn-group">
@@ -402,6 +477,8 @@
         <li>精确猜数字：<strong>猜对返还 60 倍</strong>投币。</li>
         <li>猜区间：<strong>猜对返还 1.8 倍</strong>投币。</li>
         <li>猜错不返还本金。</li>
+        <li>封存：可将当前余额的一部分转入<strong>冻结账户</strong>单独封存，封存部分不再参与投币。</li>
+        <li>取回：每累计赢满 <strong>10 次</strong>后，可从冻结账户取回金额转回余额；取回后获胜次数重新累计。</li>
       </ul>
     </div>
   </div>
@@ -422,12 +499,25 @@
     const tipBox = document.getElementById("tipBox");
     const historyList = document.getElementById("historyList");
 
+    const frozenEl = document.getElementById("frozen");
+    const frozenProgressEl = document.getElementById("frozenProgress");
+    const freezeInput = document.getElementById("freezeInput");
+    const unfreezeInput = document.getElementById("unfreezeInput");
+    const freezeBtn = document.getElementById("freezeBtn");
+    const unfreezeBtn = document.getElementById("unfreezeBtn");
+
+    // 每累计赢满 WIN_NEED 次，可从冻结账户取回一次金额
+    const WIN_NEED = 10;
+
     const maxWinEl = document.getElementById("maxWin");
     const maxLoseEl = document.getElementById("maxLose");
     const totalWinEl = document.getElementById("totalWin");
     const totalLoseEl = document.getElementById("totalLose");
 
     let balance = parseFloat(localStorage.getItem("luckGameBalance")) || 1000;
+    let frozen = parseFloat(localStorage.getItem("luckGameFrozen")) || 0;
+    // 距离上一次取回以来累计获胜的次数，达到 WIN_NEED 后解锁取回
+    let winCount = parseInt(localStorage.getItem("luckGameWinCount"), 10) || 0;
     let stats = JSON.parse(localStorage.getItem("luckGameStats")) || {
       maxWin: 0,
       maxLose: 0,
@@ -450,6 +540,27 @@
     function renderBalance() {
       balanceEl.textContent = balance.toFixed(2);
       localStorage.setItem("luckGameBalance", balance);
+    }
+
+    function renderFrozen() {
+      frozenEl.textContent = frozen.toFixed(2);
+      localStorage.setItem("luckGameFrozen", frozen);
+      localStorage.setItem("luckGameWinCount", winCount);
+
+      const unlocked = winCount >= WIN_NEED;
+      if (frozen <= 0) {
+        frozenProgressEl.textContent = "暂无封存金额";
+        frozenProgressEl.classList.remove("unlocked");
+      } else if (unlocked) {
+        frozenProgressEl.textContent = "✅ 已满足取回条件，可从冻结账户取回金额";
+        frozenProgressEl.classList.add("unlocked");
+      } else {
+        frozenProgressEl.textContent = `再赢 ${WIN_NEED - winCount} 次可解锁取回（${winCount}/${WIN_NEED}）`;
+        frozenProgressEl.classList.remove("unlocked");
+      }
+
+      // 未解锁或冻结金额为 0 时，取回按钮禁用
+      unfreezeBtn.disabled = !unlocked || frozen <= 0;
     }
 
     function renderStats() {
@@ -503,6 +614,54 @@
       historyListData = [];
       renderHistory();
       setTip("对局历史已清空，余额和战绩不变", "info");
+    }
+
+    // 封存：从余额转入冻结账户
+    freezeBtn.onclick = ()=>{
+      const amt = parseFloat(freezeInput.value);
+      if (isNaN(amt) || amt <= 0) {
+        setTip("封存金额必须是大于 0 的数字！", "lose");
+        return;
+      }
+      if (amt > balance) {
+        setTip("封存金额不能超过当前余额！", "lose");
+        return;
+      }
+      balance = parseFloat((balance - amt).toFixed(2));
+      frozen = parseFloat((frozen + amt).toFixed(2));
+      freezeInput.value = "";
+      renderBalance();
+      renderFrozen();
+      setTip(`已封存 ${amt.toFixed(2)} 到冻结账户，剩余余额 ${balance.toFixed(2)}`, "info");
+    }
+
+    // 取回：累计赢满 WIN_NEED 次后，从冻结账户转回余额
+    unfreezeBtn.onclick = ()=>{
+      if (winCount < WIN_NEED) {
+        setTip(`还需再赢 ${WIN_NEED - winCount} 次才能取回冻结金额！`, "lose");
+        return;
+      }
+      if (frozen <= 0) {
+        setTip("冻结账户中没有可取回的金额！", "lose");
+        return;
+      }
+      const amt = parseFloat(unfreezeInput.value);
+      if (isNaN(amt) || amt <= 0) {
+        setTip("取回金额必须是大于 0 的数字！", "lose");
+        return;
+      }
+      if (amt > frozen) {
+        setTip("取回金额不能超过冻结账户余额！", "lose");
+        return;
+      }
+      frozen = parseFloat((frozen - amt).toFixed(2));
+      balance = parseFloat((balance + amt).toFixed(2));
+      winCount = 0; // 取回后重新累计获胜次数
+      unfreezeInput.value = "";
+      renderBalance();
+      renderFrozen();
+      renderStats();
+      setTip(`已从冻结账户取回 ${amt.toFixed(2)}，余额 ${balance.toFixed(2)}`, "win");
     }
 
     startBtn.addEventListener("click", async () => {
@@ -576,6 +735,10 @@
         balance += profit;
         stats.totalWin += profit;
         if (profit > stats.maxWin) stats.maxWin = profit;
+        winCount++;
+        if (winCount === WIN_NEED) {
+          setTip(tipBox.innerText + "｜✅ 已赢满 " + WIN_NEED + " 次，可从冻结账户取回金额", "win");
+        }
       } else {
         profit = 0;
         setTip(`😵 猜错！随机数：${rand}，本金扣除`, "lose");
@@ -599,6 +762,7 @@
 
       renderBalance();
       renderStats();
+      renderFrozen();
       renderHistory();
 
       startBtn.disabled = false;
@@ -611,7 +775,7 @@
     resetBalanceBtn.onclick = ()=>{
       balance = 1000;
       renderBalance();
-      setTip("余额已重置为1000.00，战绩、历史保持不变", "info");
+      setTip("余额已重置为1000.00，冻结金额、战绩、历史保持不变", "info");
     }
     resetStatBtn.onclick = ()=>{
       stats = {
@@ -626,6 +790,7 @@
 
     renderBalance();
     renderStats();
+    renderFrozen();
     renderHistory();
   </script>
 </body>
